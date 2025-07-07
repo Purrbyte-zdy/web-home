@@ -1,8 +1,789 @@
 <!DOCTYPE html>
+<html lang="zh-CN">
+
 <head>
-    <title>Dragon Studio Website</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dragon Studio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --primary: #EC842A;
+            --secondary: #c41e3a;
+            --dark: #0a0a12;
+            --light: #f5f5f5;
+            --accent: #4a0080;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a12, #1a1a2e);
+            color: var(--light);
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* 粒子背景 */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 18, 0.8);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            padding: 1rem 5%;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            color: var(--secondary);
+            animation: pulse 2s infinite;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin: 0 15px;
+        }
+
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            padding: 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .cta-button {
+            background: linear-gradient(45deg, var(--secondary), var(--accent));
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(196, 30, 58, 0.4);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(196, 30, 58, 0.6);
+        }
+
+        /* 英雄区域 */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 10%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            z-index: 10;
+        }
+
+        .hero h1 {
+            font-size: 4.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #ffd700, #ff8c00, #c41e3a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        /* 龙形SVG装饰 */
+        .dragon-svg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            opacity: 0.1;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 服务区域 */
+        .services {
+            padding: 100px 5%;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            border-radius: 2px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .service-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 40px 30px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .service-card:hover {
+            transform: translateY(-15px);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .service-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover .service-icon {
+            transform: scale(1.2);
+            color: var(--secondary);
+        }
+
+        .service-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        /* 作品集 */
+        .portfolio {
+            padding: 100px 5%;
+            background: rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 60px;
+        }
+
+        .portfolio-item {
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            height: 300px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .portfolio-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.5s ease;
+        }
+
+        .portfolio-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            padding: 30px 20px 20px;
+            transform: translateY(100px);
+            transition: all 0.4s ease;
+        }
+
+        .portfolio-item:hover .portfolio-overlay {
+            transform: translateY(0);
+        }
+
+        .portfolio-item:hover .portfolio-img {
+            transform: scale(1.1);
+        }
+
+        /* 团队 */
+        .team {
+            padding: 100px 5%;
+            text-align: center;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .team-member {
+            position: relative;
+            perspective: 1000px;
+            height: 350px;
+        }
+
+        .team-card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.8s;
+        }
+
+        .team-member:hover .team-card {
+            transform: rotateY(180deg);
+        }
+
+        .team-front,
+        .team-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .team-front {
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .team-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .team-back {
+            background: linear-gradient(45deg, #0a0a12, #1a1a2e);
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 30px;
+            text-align: left;
+        }
+
+        /* 联系区域 */
+        .contact {
+            padding: 100px 5%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .contact-info {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .contact-form {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        /* 页脚 */
+        .footer {
+            background: rgba(5, 5, 10, 0.8);
+            padding: 50px 5% 20px;
+            text-align: center;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary);
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: var(--primary);
+            color: var(--dark);
+            transform: translateY(-5px);
+        }
+
+        .copyright {
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0.7;
+        }
+
+        /* 动画效果 */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px rgba(255, 215, 0, 0.5), 0 0 10px rgba(255, 215, 0, 0.5);
+            }
+
+            to {
+                text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 30px rgba(196, 30, 58, 0.8);
+            }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            .nav-links {
+                margin: 20px 0;
+            }
+
+            .hero h1 {
+                font-size: 3rem;
+            }
+
+            .hero p {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    网站正在建设阶段，请跳转
-    <a href="https://dragonstudio.mysxl.cn">旧网站</a>
+    <!-- 粒子背景 -->
+    <div id="particles-js"></div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <a href="#" class="logo">
+            <i class="fas fa-dragon"></i>
+            Dragon Studio
+        </a>
+        <ul class="nav-links">
+            <li><a href="#home">首页</a></li>
+            <li><a href="#services">服务</a></li>
+            <li><a href="#portfolio">作品集</a></li>
+            <!-- <li><a href="#team">团队</a></li> -->
+            <li><a href="#contact">联系我们</a></li>
+        </ul>
+        <!-- <button class="cta-button">开始项目</button> -->
+    </nav>
+
+    <!-- 英雄区域 -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>释放创意力量</h1>
+            <p>Dragon Studio 将您的愿景转化为令人惊叹的数字体验。我们融合尖端技术与艺术设计，打造非凡的创意解决方案。</p>
+            <a href="#portfolio"><button class="cta-button">探索我们的作品</button></a>
+        </div>
+        <!-- SVG龙形装饰
+        <svg class="dragon-svg" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+            <path d="M100,300 C150,250 200,200 250,250 C300,300 350,350 400,300 C450,250 500,200 550,250 C600,300 650,350 700,300"
+                  stroke="#ffd700" stroke-width="4" fill="none" stroke-dasharray="10,5"/>
+            <path d="M700,300 Q750,280 760,250 Q770,220 750,200"
+                  stroke="#c41e3a" stroke-width="4" fill="none"/>
+        </svg> -->
+    </section>
+
+    <!-- 服务区域 -->
+    <section id="services" class="services">
+        <h2 class="section-title">我们的服务</h2>
+        <!-- <p>我们提供全方位的创意解决方案，助力您的业务腾飞</p> -->
+
+        <div class="services-grid">
+            <div class="service-card">
+                <i class="fas fa-house service-icon"></i>
+                <h3>Minecraft养老服务器</h3>
+                <p>将会在将来开放公益养老生存服务器，为你提供卓越的游玩体验。</p>
+            </div>
+
+            <div class="service-card">
+                <i class="fas fa-laptop-code service-icon"></i>
+                <h3>免费网站搭建</h3>
+                <p>免费提供可靠的、安全的静态网站部署方案，为你的个人、团队网页增添一抹亮色。</p>
+            </div>
+
+            <!-- <div class="service-card">
+                <i class="fas fa-video service-icon"></i>
+                <h3>动画制作</h3>
+                <p>创作引人入胜的2D/3D动画，讲述您的品牌故事，提升视觉影响力。</p>
+            </div> -->
+        </div>
+    </section>
+
+    <!-- 作品集 -->
+    <section id="portfolio" class="portfolio">
+        <h2 class="section-title">精选作品</h2>
+        <p>探索我们引以为傲的创意项目</p>
+
+        <div class="portfolio-grid">
+            <div class="portfolio-item">
+                <!-- <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Circle" class="portfolio-img"> -->
+                <div class="portfolio-overlay">
+                    <h3>Circle</h3>
+                    <p>一款模拟真实系统的软件（已停更）</p>
+                </div>
+            </div>
+
+            <div class="portfolio-item">
+                <!-- <img src="https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Summly" class="portfolio-img"> -->
+                <div class="portfolio-overlay">
+                    <h3>Summly</h3>
+                    <p>为你的文件更快、更精准的命名（未开发）</p>
+                </div>
+            </div>
+
+            <!-- <div class="portfolio-item">
+                <img src="https://images.unsplash.com/photo-1579567761406-4684ee0c75b6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="动画作品" class="portfolio-img">
+                <div class="portfolio-overlay">
+                    <h3>龙之传奇动画</h3>
+                    <p>3D动画短片制作</p>
+                </div>
+            </div> -->
+        </div>
+    </section>
+
+    <!-- 团队
+    <section id="team" class="team">
+        <h2 class="section-title">创意团队</h2>
+        <p>认识我们才华横溢的创意专家</p>
+
+        <div class="team-grid">
+            <div class="team-member">
+                <div class="team-card">
+                    <div class="team-front">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                            alt="设计总监" class="team-img">
+                        <h3>李明</h3>
+                        <p>创意总监</p>
+                    </div>
+                    <div class="team-back">
+                        <h3>李明</h3>
+                        <p>拥有12年品牌设计经验，曾服务全球500强企业，擅长将传统文化与现代设计融合。</p>
+                        <p>"设计是解决问题的艺术"</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="team-member">
+                <div class="team-card">
+                    <div class="team-front">
+                        <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                            alt="技术总监" class="team-img">
+                        <h3>张伟</h3>
+                        <p>技术总监</p>
+                    </div>
+                    <div class="team-back">
+                        <h3>张伟</h3>
+                        <p>全栈开发专家，精通前沿Web技术，致力于创造高性能、可扩展的数字解决方案。</p>
+                        <p>"代码是数字世界的诗歌"</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="team-member">
+                <div class="team-card">
+                    <div class="team-front">
+                        <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                            alt="动画总监" class="team-img">
+                        <h3>王雪</h3>
+                        <p>动画总监</p>
+                    </div>
+                    <div class="team-back">
+                        <h3>王雪</h3>
+                        <p>动画艺术家与导演，作品多次获得国际奖项，擅长通过视觉叙事传递情感。</p>
+                        <p>"每个帧都承载着情感"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section> -->
+
+    <!-- 联系区域 -->
+    <section id="contact" class="contact">
+        <div class="contact-info">
+            <h2 class="section-title">联系我们</h2>
+            <p>准备好开始您的创意旅程了吗？我们期待听到您的想法！</p>
+
+            <div style="margin-top: 40px;">
+                <!-- <p><i class="fas fa-map-marker-alt" style="color: var(--primary); margin-right: 10px;"></i>
+                    北京市朝阳区创意产业园A座</p> -->
+                <!-- <p><i class="fas fa-phone" style="color: var(--primary); margin-right: 10px;"></i> +86 10 8888 7777</p> -->
+                <p><i class="fas fa-envelope" style="color: var(--primary); margin-right: 10px;"></i>
+                    ZhangDingYi2022@outlook.com</p>
+            </div>
+            <!-- 
+            <div style="margin-top: 30px;">
+                <h3>营业时间</h3>
+                <p>周一至周五: 9:00 - 18:00</p>
+                <p>周六: 10:00 - 16:00</p>
+                <p>周日: 休息</p>
+            </div> -->
+        </div>
+        <!-- 
+        <div class="contact-form">
+            <h3>发送消息</h3>
+            <form>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="您的姓名" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" placeholder="电子邮箱" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="主题">
+                </div>
+                <div class="form-group">
+                    <textarea class="form-control" placeholder="您的消息" required></textarea>
+                </div>
+                <button type="submit" class="cta-button" style="width: 100%;">发送消息</button>
+            </form>
+        </div> -->
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <!-- <div class="social-links">
+            <a href="#" class="social-link"><i class="fab fa-weixin"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-weibo"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-dribbble"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-behance"></i></a>
+        </div> -->
+
+        <div class="copyright">
+            <p>&copy; 2022-2025 Dragon Studio. 保留所有权利。</p>
+            <p>创造非凡，释放龙之力量</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // 粒子背景配置
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: "#ffd700" },
+                shape: { type: "circle" },
+                opacity: { value: 0.5, random: true },
+                size: { value: 3, random: true },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: "#c41e3a",
+                    opacity: 0.4,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: "none",
+                    random: true,
+                    straight: false,
+                    out_mode: "out",
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: { enable: true, mode: "grab" },
+                    onclick: { enable: true, mode: "push" },
+                    resize: true
+                },
+                modes: {
+                    grab: { distance: 140, line_linked: { opacity: 1 } },
+                    push: { particles_nb: 4 }
+                }
+            },
+            retina_detect: true
+        });
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function () {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // 3D龙形效果
+        window.addEventListener('mousemove', function (e) {
+            const dragon = document.querySelector('.dragon-svg');
+            const x = (window.innerWidth / 2 - e.pageX) / 25;
+            const y = (window.innerHeight / 2 - e.pageY) / 25;
+            dragon.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px)`;
+        });
+
+        // 服务卡片动画
+        const serviceCards = document.querySelectorAll('.service-card');
+        serviceCards.forEach(card => {
+            card.addEventListener('mouseenter', function () {
+                this.style.transform = 'translateY(-15px)';
+            });
+
+            card.addEventListener('mouseleave', function () {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
 </body>
+
+</html>
